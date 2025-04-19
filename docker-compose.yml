@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+  app:
+    image: python:3.9
+    command: python -m http.server 8000
+    ports:
+      - "8000:8000"

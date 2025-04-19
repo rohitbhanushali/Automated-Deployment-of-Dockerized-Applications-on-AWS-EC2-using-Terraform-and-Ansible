@@ -1,0 +1,6 @@
+- name: Configure EC2 instance and deploy Docker application
+  hosts: all
+  become: true
+  roles:
+    - docker_setup
+    - docker_compose_deploy
