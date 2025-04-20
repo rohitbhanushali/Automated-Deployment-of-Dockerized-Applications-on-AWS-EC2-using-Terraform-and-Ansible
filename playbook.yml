@@ -1,8 +1,8 @@
 - name: Configure EC2 instance and deploy Docker application
   hosts: all
   become: true
-  pre_tasks:
-    - name: Check internet connectivity
+  tasks:
+    - name: Ensure internet connectivity
       shell: ping -c 4 google.com
       register: ping_result
       failed_when: ping_result.rc != 0

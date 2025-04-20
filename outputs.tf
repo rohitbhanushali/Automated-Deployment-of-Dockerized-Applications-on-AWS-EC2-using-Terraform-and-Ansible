@@ -8,7 +8,17 @@ output "instance_id" {
   value       = module.ec2_instance.instance_id
 }
 
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = module.networking.vpc_id
+}
+
+output "public_subnet_id" {
+  description = "The ID of the public subnet"
+  value       = module.networking.public_subnet_id
+}
+
 output "security_group_id" {
   description = "The ID of the security group"
-  value       = module.security_group.id # Correctly referencing the id output
+  value       = module.security_group.id
 }
