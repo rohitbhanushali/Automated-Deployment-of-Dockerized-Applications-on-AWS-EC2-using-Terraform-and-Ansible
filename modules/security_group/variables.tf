@@ -1,10 +1,9 @@
-variable "group_name" {}
-variable "descriptions" {}
-variable "ingress_rules" {
-  type = list(object({
-    from_port   = number
-    to_port     = number
-    protocol    = string
-    cidr_blocks = list(string)
-  }))
+variable "vpc_id" {
+  description = "ID of the VPC where the security group will be created"
+  type        = string
+}
+
+variable "allowed_ips" {
+  description = "List of CIDR blocks allowed to access the resources"
+  type        = list(string)
 }
