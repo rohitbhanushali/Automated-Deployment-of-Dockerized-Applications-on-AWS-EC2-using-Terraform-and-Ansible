@@ -15,7 +15,7 @@ module "ec2_instance" {
 
 module "security_group" {
   source      = "./modules/security_group"
-  group_name  = "allow_ssh"
+  group_name  = "allow_ssh_unique"  # Add a unique suffix
   descriptions = "Allow SSH inbound traffic"
   ingress_rules = [
     {
