@@ -1,6 +1,18 @@
 - name: Configure EC2 instance and deploy Docker application
   hosts: all
   become: true
+  pre_tasks:
+    - name: Check internet connectivity
+      shell: ping -c 4 google.com
+      register: ping_result
+      failed_when: ping_result.rc != 0
+
+    - name: Configure DNS
+      lineinfile:
+        path: /etc/resolv.conf
+        line: "nameserver 8.8.8.8"
+        state: present
+
   roles:
     - docker_setup
     - docker_compose_deploy

@@ -3,7 +3,26 @@ resource "aws_security_group" "sg" {
   description = var.descriptions
 
   dynamic "ingress" {
-    for_each = var.ingress_rules
+    for_each = [
+      {
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      },
+      {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      },
+      {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+    ]
     content {
       from_port   = ingress.value.from_port
       to_port     = ingress.value.to_port
