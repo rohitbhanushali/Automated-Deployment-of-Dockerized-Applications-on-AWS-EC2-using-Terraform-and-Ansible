@@ -28,7 +28,3 @@ resource "aws_security_group" "sg" {
     Name = "AllowInboundTraffic"
   }
 }
-
-output "id" {
-  value = aws_security_group.sg.id
-}

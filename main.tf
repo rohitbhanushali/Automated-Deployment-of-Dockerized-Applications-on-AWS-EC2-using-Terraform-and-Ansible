@@ -3,27 +3,26 @@ provider "aws" {
 }
 
 module "networking" {
-  source = "./modules/networking"
-  vpc_cidr_block = var.vpc_cidr_block
+  source          = "./modules/networking"
+  vpc_cidr_block  = var.vpc_cidr_block
 }
 
 module "ec2_instance" {
-  source          = "./modules/ec2"
-  ami             = var.ami
-  instance_type   = var.instance_type
-  key_name        = aws_key_pair.deployer_key.key_name
+  source            = "./modules/ec2"
+  ami               = var.ami
+  instance_type     = var.instance_type
+  key_name          = aws_key_pair.deployer_key.key_name
   security_group_ids = [module.security_group.id]
-  subnet_id       = module.networking.public_subnet_id
-  tags            = {
+  subnet_id         = module.networking.public_subnet_id
+  tags = {
     Name = var.instance_name
   }
 }
 
-
 module "security_group" {
-  source       = "./modules/security_group"
-  vpc_id       = module.networking.vpc_id
-  allowed_ips  = var.allowed_ips
+  source      = "./modules/security_group"
+  vpc_id      = module.networking.vpc_id
+  allowed_ips = var.allowed_ips
 }
 
 resource "aws_key_pair" "deployer_key" {
@@ -32,11 +31,11 @@ resource "aws_key_pair" "deployer_key" {
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.networking.vpc_id
 }
 
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.networking.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -45,6 +44,6 @@ resource "aws_route_table" "public_rt" {
 }
 
 resource "aws_route_table_association" "public_rt_assoc" {
-  subnet_id      = aws_subnet.public.id
+  subnet_id      = module.networking.public_subnet_id
   route_table_id = aws_route_table.public_rt.id
 }
