@@ -1,18 +1,9 @@
 resource "aws_security_group" "sg" {
-  vpc_id      = var.vpc_id
-  name        = "AllowInboundTraffic"
-  description = "Security group to allow inbound traffic"
+  vpc_id = var.vpc_id
 
   ingress {
     from_port   = 22
     to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_ips
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = var.allowed_ips
   }
@@ -25,6 +16,6 @@ resource "aws_security_group" "sg" {
   }
 
   tags = {
-    Name = "AllowInboundTraffic"
+    Name = "AllowSSH"
   }
 }
