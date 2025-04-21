@@ -1,0 +1,9 @@
+---
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+  register: docker_restart
+  retries: 3
+  delay: 5
+  until: docker_restart is success 

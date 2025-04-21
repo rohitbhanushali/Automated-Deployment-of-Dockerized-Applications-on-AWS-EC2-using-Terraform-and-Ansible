@@ -1,10 +1,83 @@
-- name: Copy Docker Compose file to the instance
-  copy:
-    src: ./docker-compose.yml
-    dest: /home/ec2-user/docker-compose.yml
-    owner: ec2-user
-    group: ec2-user
-    mode: '0644'
+---
+# Create app directory structure
+- name: Create app directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  with_items:
+    - "/home/{{ ansible_user }}/app"
+    - "/home/{{ ansible_user }}/app/data"
+    - "/home/{{ ansible_user }}/app/logs"
+  register: dir_creation
+  retries: 3
+  delay: 5
+  until: dir_creation is success
 
-- name: Run Docker Compose
-  command: docker-compose -f /home/ec2-user/docker-compose.yml up -d
+# Copy Docker Compose file
+- name: Copy Docker Compose file
+  copy:
+    src: "{{ playbook_dir }}/../docker-compose.yml"
+    dest: "/home/{{ ansible_user }}/app/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+  register: compose_copy
+  retries: 3
+  delay: 5
+  until: compose_copy is success
+
+# Create .env file for environment variables
+- name: Create .env file
+  copy:
+    content: |
+      # Application environment variables
+      APP_ENV=production
+      APP_PORT=8000
+      # Add other environment variables as needed
+    dest: "/home/{{ ansible_user }}/app/.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+  register: env_copy
+  retries: 3
+  delay: 5
+  until: env_copy is success
+
+# Pull Docker images
+- name: Pull Docker images
+  command: docker-compose -f /home/{{ ansible_user }}/app/docker-compose.yml pull
+  args:
+    chdir: "/home/{{ ansible_user }}/app"
+  become: yes
+  become_user: "{{ ansible_user }}"
+  register: docker_pull
+  retries: 3
+  delay: 5
+  until: docker_pull is success
+
+# Start Docker Compose services
+- name: Start Docker Compose services
+  command: docker-compose -f /home/{{ ansible_user }}/app/docker-compose.yml up -d
+  args:
+    chdir: "/home/{{ ansible_user }}/app"
+  become: yes
+  become_user: "{{ ansible_user }}"
+  register: docker_up
+  retries: 3
+  delay: 5
+  until: docker_up is success
+
+# Wait for services to be healthy
+- name: Wait for services to be healthy
+  command: docker-compose -f /home/{{ ansible_user }}/app/docker-compose.yml ps
+  args:
+    chdir: "/home/{{ ansible_user }}/app"
+  become: yes
+  become_user: "{{ ansible_user }}"
+  register: docker_ps
+  retries: 10
+  delay: 10
+  until: docker_ps.rc == 0 and "'Up' in docker_ps.stdout"

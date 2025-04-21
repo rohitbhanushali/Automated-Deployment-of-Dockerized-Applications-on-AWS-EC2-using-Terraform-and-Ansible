@@ -1,18 +1,61 @@
+---
 - name: Configure EC2 instance and deploy Docker application
   hosts: all
-  become: true
-  tasks:
+  become: yes
+  vars:
+    app_env: production
+    app_port: 8000
+
+  pre_tasks:
     - name: Ensure internet connectivity
       shell: ping -c 4 google.com
       register: ping_result
       failed_when: ping_result.rc != 0
+      retries: 3
+      delay: 5
+      until: ping_result.rc == 0
 
     - name: Configure DNS
       lineinfile:
         path: /etc/resolv.conf
         line: "nameserver 8.8.8.8"
         state: present
+      register: dns_config
+      retries: 3
+      delay: 5
+      until: dns_config is success
 
   roles:
-    - docker_setup
-    - docker_compose_deploy
+    - name: docker_setup
+      tags: 
+        - setup
+        - docker
+
+    - name: docker_compose_deploy
+      tags:
+        - deploy
+        - docker
+      vars:
+        app_env: "{{ app_env }}"
+        app_port: "{{ app_port }}"
+
+  post_tasks:
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+      failed_when: docker_version.rc != 0
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+      register: docker_compose_version
+      changed_when: false
+      failed_when: docker_compose_version.rc != 0
+
+    - name: Display Docker information
+      debug:
+        msg: 
+          - "Docker version: {{ docker_version.stdout }}"
+          - "Docker Compose version: {{ docker_compose_version.stdout }}"
+          - "Application environment: {{ app_env }}"
+          - "Application port: {{ app_port }}"
